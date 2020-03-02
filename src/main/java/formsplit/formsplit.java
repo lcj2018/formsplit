@@ -171,7 +171,7 @@ public class formsplit {
 			Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 6, Imgproc.LINE_AA);
 		}	
 		
-		int vScale = 70;
+		int vScale = 63;
 		int verticalSize = horizontal.cols() / vScale;
 		Mat verticalStruct = Imgproc.getStructuringElement(
 				Imgproc.MORPH_RECT, new Size(1, verticalSize));
@@ -236,7 +236,7 @@ public class formsplit {
 			double epsilon = 0.1 * Imgproc.arcLength(mat2f, true);
 			Imgproc.approxPolyDP(mat2f, approx, epsilon, true);
 			Rect rec = Imgproc.boundingRect(approx);
-			if(rec.height < 30 || rec.width < 20)continue;
+			if(rec.height < 20 || rec.width < 20)continue;
 			
 			RectangleArea recItem = new RectangleArea();
 			recItem.setPosition(rec.x + bound, rec.y + bound);
@@ -277,11 +277,12 @@ public class formsplit {
 	
 	public static void main(String[] args) {
 		
-		List<RectangleArea> arr = doSplit("D:\\eclipse-workspace\\formsplit\\image\\ggg.png");
+		List<RectangleArea> arr = doSplit("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
 		
-		Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\ggg.png");
+		Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
 		String resPath = "D:\\eclipse-workspace\\formsplit\\image\\result\\res";
 		int cnt = 0;
+//		Imgproc.line(srcImg, new Point(0,0), new Point(100, 200), new Scalar(255,0,0), 12, Imgproc.LINE_AA);
 		for(int i = 0; i < arr.size(); ++i) {
 			Mat recImg = srcImg.clone();
 			
@@ -293,14 +294,14 @@ public class formsplit {
 			rec.height = arr.get(i).getHeight();
 			rec.width = arr.get(i).getWidth();
 			
-//			System.out.println(rec.x + "," + rec.y + " " + rec.height + " " + rec.width);
+			System.out.println(rec.x + "," + rec.y + " " + rec.height + " " + rec.width);
 			
 			Imgproc.rectangle(recImg, rec, new Scalar(255, 255, 0), 10);
 			cnt++;
 			Imgcodecs.imwrite(resPath + "t_" + cnt + ".png", recImg);
 			Mat cutImg = srcImg.submat(rec);    
 			Imgcodecs.imwrite(resPath + "_" + cnt + ".png", cutImg);
-			System.out.println(resPath + "_" + cnt + ".png");
+//			System.out.println(resPath + "_" + cnt + ".png");
 		}
 	}
 }
