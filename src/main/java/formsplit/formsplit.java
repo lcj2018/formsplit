@@ -239,7 +239,7 @@ public class formsplit {
 			if(rec.height < 20 || rec.width < 20)continue;
 			
 			RectangleArea recItem = new RectangleArea();
-			recItem.setPosition(rec.x + bound, rec.y + bound);
+			recItem.setPosition(rec.y + bound, rec.x + bound);
 			recItem.setHeight(rec.height);
 			recItem.setWidth(rec.width);
 			ans.add(recItem);
@@ -248,12 +248,12 @@ public class formsplit {
 		
 		RectangleArea top = new RectangleArea();
 		top.setPosition(0, 0);
-		top.setHeight(ans.get(ans.size() - 1).getPosition().getY());
+		top.setHeight(ans.get(ans.size() - 1).getPosition().getX());
 		top.setWidth(srcImg.cols());
 		
 		RectangleArea bottom = new RectangleArea();
-		bottom.setPosition(0, ans.get(0).getPosition().getY() + ans.get(0).getHeight());
-		bottom.setHeight(srcImg.rows() - ans.get(0).getHeight() - ans.get(0).getPosition().getY());
+		bottom.setPosition(0, ans.get(0).getPosition().getX() + ans.get(0).getHeight());
+		bottom.setHeight(srcImg.rows() - ans.get(0).getHeight() - ans.get(0).getPosition().getX());
 		bottom.setWidth(srcImg.cols());
 		
 		ans.add(top);
@@ -289,19 +289,19 @@ public class formsplit {
 			Position pos = arr.get(i).getPosition();
 			
 			Rect rec = new Rect();
-			rec.x = pos.getX();
-			rec.y = pos.getY();
+			rec.x = pos.getY();
+			rec.y = pos.getX();
 			rec.height = arr.get(i).getHeight();
 			rec.width = arr.get(i).getWidth();
 			
-			System.out.println(rec.x + "," + rec.y + " " + rec.height + " " + rec.width);
+			System.out.println(pos.getX() + "," + pos.getY() + " " + rec.width + " " + rec.height);
 			
 			Imgproc.rectangle(recImg, rec, new Scalar(255, 255, 0), 10);
 			cnt++;
 			Imgcodecs.imwrite(resPath + "t_" + cnt + ".png", recImg);
 			Mat cutImg = srcImg.submat(rec);    
 			Imgcodecs.imwrite(resPath + "_" + cnt + ".png", cutImg);
-//			System.out.println(resPath + "_" + cnt + ".png");
+			System.out.println(resPath + "_" + cnt + ".png");
 		}
 	}
 }
