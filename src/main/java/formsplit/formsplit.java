@@ -222,7 +222,7 @@ public class formsplit {
 		Imgcodecs.imwrite("D:\\eclipse-workspace\\formsplit\\image\\mask.png", mask);
 		
 		Imgproc.findContours(mask, contours, hierarchy, 
-				Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+				Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 	}
 	
 	public static List<RectangleArea> getSplitImg(Mat srcImg, Mat netImg, 
@@ -232,6 +232,12 @@ public class formsplit {
 		MatOfPoint2f mat2f = new MatOfPoint2f();
 		MatOfPoint2f approx = new MatOfPoint2f();
 		for(int i = 0; i < contours.size(); ++i) {
+			
+			int[] arr = new int[4];
+			hierarchy.get(0, i, arr);
+			if(arr[2] != -1) continue;
+			//System.out.println(arr[0] + " " + arr[1] + " " + arr[2] + " " + arr[3] + " " + hierarchy.size() + " " + hierarchy.channels());
+			
 			contours.get(i).convertTo(mat2f, CvType.CV_32FC2);
 			double epsilon = 0.1 * Imgproc.arcLength(mat2f, true);
 			Imgproc.approxPolyDP(mat2f, approx, epsilon, true);
@@ -245,19 +251,6 @@ public class formsplit {
 			ans.add(recItem);
 			
 		}
-		
-		RectangleArea top = new RectangleArea();
-		top.setPosition(0, 0);
-		top.setHeight(ans.get(ans.size() - 1).getPosition().getX());
-		top.setWidth(srcImg.cols());
-		
-		RectangleArea bottom = new RectangleArea();
-		bottom.setPosition(0, ans.get(0).getPosition().getX() + ans.get(0).getHeight());
-		bottom.setHeight(srcImg.rows() - ans.get(0).getHeight() - ans.get(0).getPosition().getX());
-		bottom.setWidth(srcImg.cols());
-		
-		ans.add(top);
-		if(bottom.getHeight() > 0)ans.add(bottom);
 		
 		return ans;
 	}
