@@ -1,8 +1,13 @@
 package formsplit;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -13,7 +18,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -53,6 +58,7 @@ class RectangleArea {
 	private int height;
 	private int width;
 	public  List<String> contents;
+	private BufferedImage image;
 	
 	public void setPosition(int x, int y) {
 		startPos.setX(x);
@@ -77,6 +83,14 @@ class RectangleArea {
 
 	public void setWidth(int width) {
 		this.width = width;
+	}
+
+	public BufferedImage getImage() {
+		return image;
+	}
+
+	public void setImage(BufferedImage image) {
+		this.image = image;
 	}
 
 }
@@ -245,10 +259,22 @@ public class formsplit {
 			if(rec.height < 20 || rec.width < 20)continue;
 			
 			RectangleArea recItem = new RectangleArea();
-			recItem.setPosition(rec.y + bound, rec.x + bound);
+			recItem.setPosition(rec.x + bound, rec.y + bound);
 			recItem.setHeight(rec.height);
 			recItem.setWidth(rec.width);
+			
+			Mat cutImg = srcImg.submat(rec);
+			recItem.setImage((BufferedImage)HighGui.toBufferedImage(cutImg));
+			
 			ans.add(recItem);
+			
+//			File outfile = new File("D:\\git_proj\\formsplit\\image\\result\\" + i + ".png");
+//			try {
+//				ImageIO.write((BufferedImage)HighGui.toBufferedImage(cutImg), "png", outfile);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			
 		}
 		
@@ -273,7 +299,7 @@ public class formsplit {
 		List<RectangleArea> arr = doSplit("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
 		
 		Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
-		String resPath = "D:\\eclipse-workspace\\formsplit\\image\\result\\res";
+		String resPath = "D:\\git_proj\\formsplit\\image\\result\\res";
 		int cnt = 0;
 //		Imgproc.line(srcImg, new Point(0,0), new Point(100, 200), new Scalar(255,0,0), 12, Imgproc.LINE_AA);
 		for(int i = 0; i < arr.size(); ++i) {
@@ -282,8 +308,8 @@ public class formsplit {
 			Position pos = arr.get(i).getPosition();
 			
 			Rect rec = new Rect();
-			rec.x = pos.getY();
-			rec.y = pos.getX();
+			rec.x = pos.getX();
+			rec.y = pos.getY();
 			rec.height = arr.get(i).getHeight();
 			rec.width = arr.get(i).getWidth();
 			
