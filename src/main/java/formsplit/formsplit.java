@@ -1,6 +1,8 @@
 package formsplit;
 
+import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -251,6 +254,7 @@ public class formsplit {
         Imgproc.cvtColor(srcImg, grayImg, Imgproc.COLOR_BGR2GRAY);
 
         Imgproc.GaussianBlur(grayImg, gaussImg, new Size(3, 3), 0);
+        Imgcodecs.imwrite("D:\\git_proj\\formsplit\\image\\gaussImg.png", gaussImg);
 
         Core.bitwise_not(gaussImg, notImg);
 
@@ -449,6 +453,16 @@ public class formsplit {
         mat.put(0, 0, data);
         return mat;
     }
+    
+    public static BufferedImage toGray(BufferedImage srcImg) {      
+        return new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null).filter(srcImg, null);
+    }
+    
+    public static BufferedImage BGR2Gray(BufferedImage srcImg) {
+    	Mat img = BufImg2Mat(srcImg);
+    	Imgproc.cvtColor(img, img, Imgproc.COLOR_BGR2GRAY);
+    	return (BufferedImage)HighGui.toBufferedImage(img);
+    }
 
     public static List<RectangleArea> doSplit(BufferedImage img) throws IOException {
         Mat srcImg = BufImg2Mat(img);
@@ -469,6 +483,9 @@ public class formsplit {
 
         List<RectangleArea> arr = doSplit(img);
 
+        File grayFile = new File("D:\\git_proj\\formsplit\\image\\9529.png");
+        ImageIO.write(BGR2Gray(img), "png", grayFile);
+        
         Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\bill.png");
         String resPath = "D:\\git_proj\\formsplit\\image\\result\\res";
         int cnt = 0;
@@ -484,14 +501,14 @@ public class formsplit {
             rec.height = arr.get(i).getHeight();
             rec.width = arr.get(i).getWidth();
 
-            System.out.println(pos.getX() + "," + pos.getY() + " " + rec.width + " " + rec.height);
+//            System.out.println(pos.getX() + "," + pos.getY() + " " + rec.width + " " + rec.height);
 
             Imgproc.rectangle(recImg, rec, new Scalar(255, 255, 0), 10);
             cnt++;
             Imgcodecs.imwrite(resPath + "t_" + cnt + ".png", recImg);
             Mat cutImg = srcImg.submat(rec);
             Imgcodecs.imwrite(resPath + "_" + cnt + ".png", cutImg);
-            System.out.println(resPath + "_" + cnt + ".png");
+//            System.out.println(resPath + "_" + cnt + ".png");
         }
     }
 }
