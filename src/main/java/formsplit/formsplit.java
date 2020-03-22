@@ -10,15 +10,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -205,12 +197,12 @@ public class formsplit {
 			}
 		}
 		
-		if(maxV < 120) {
-//			System.out.println(maxV);
-			Mat tt = mat.submat(Math.max(0, posX - 15), Math.min(mat.rows()- 1, posX + 15), Math.max(0, posY - 15), Math.min(mat.cols() - 1, posY + 15));
-//			HighGui.imshow("mat", tt);
-//			HighGui.waitKey();
-		}
+//		if(maxV < 120) {
+////			System.out.println(maxV);
+//			Mat tt = mat.submat(Math.max(0, posX - 15), Math.min(mat.rows()- 1, posX + 15), Math.max(0, posY - 15), Math.min(mat.cols() - 1, posY + 15));
+////			HighGui.imshow("mat", tt);
+////			HighGui.waitKey();
+//		}
 		
 		return maxV;
 	}
@@ -397,7 +389,7 @@ public class formsplit {
         Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_miny, v_maxx), new Scalar(255), 10, Imgproc.LINE_AA);
         Imgproc.line(mask, new Point(h_maxy, v_minx), new Point(h_maxy, v_maxx), new Scalar(255), 10, Imgproc.LINE_AA);
 
-        Imgcodecs.imwrite("D:\\git_proj\\formsplit\\image\\mask.png", mask);
+//        Imgcodecs.imwrite("D:\\git_proj\\formsplit\\image\\mask.png", mask);
 
         Imgproc.findContours(mask, contours, hierarchy,
                 Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
