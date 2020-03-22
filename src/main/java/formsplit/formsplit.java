@@ -347,7 +347,7 @@ public class formsplit {
             v_maxy = Math.max(v_maxy, Math.max(arr[0], arr[2]));
         }
         
-        int range = 20;
+        int range = 6;
         for(int i = 0; i < hlines.rows(); ++i) {
         	int[] arr = new int[4];
         	hlines.get(i, 0, arr);
@@ -376,12 +376,12 @@ public class formsplit {
         	if(arr[2] + range >= v_maxx) {
         		v_maxx = Math.min(v_maxx, arr[2]);
         	}
-        	if(arr[0] - range <= v_minx) {
-        		v_minx = Math.max(v_minx, arr[0]);
-        	}
-        	if(arr[2] - range <= v_minx) {
-        		v_minx = Math.max(v_minx, arr[2]);
-        	}
+//        	if(arr[0] - range <= v_minx) {
+//        		v_minx = Math.max(v_minx, arr[0]);
+//        	}
+//        	if(arr[2] - range <= v_minx) {
+//        		v_minx = Math.max(v_minx, arr[2]);
+//        	}
         }
 
         Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_maxy, v_minx), new Scalar(255), 10, Imgproc.LINE_AA);
