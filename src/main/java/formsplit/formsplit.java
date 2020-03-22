@@ -153,6 +153,31 @@ public class formsplit {
         return false;
     }
 
+	public static boolean checkQualification(int arr[], Mat lines) {
+		int x, y;
+		if(arr[1] < arr[3]) {
+			x = arr[1];
+			y = arr[0];
+		} else {
+			x = arr[3];
+			y = arr[2];
+		}
+		
+		for(int i = 0; i < lines.rows(); ++i) {
+			int[] pos = new int[4];
+			lines.get(i, 0, pos);
+			
+			if(Math.min(Math.abs(x - pos[1]), Math.abs(x - pos[3])) < 3
+					&& Math.min(arr[0], arr[2]) <= y 
+					&& y <= Math.max(arr[0], arr[2])) {
+				return true;
+			}
+			
+		}
+		
+		return false;
+	}
+    
     public static int GetLowLine(int x, int y, Mat lines) {
 
         int linex = 10000000;
@@ -168,6 +193,61 @@ public class formsplit {
 
         return linex;
     }
+    
+	public static int findDeepPixel(Mat mat, int posX, int posY) {
+		
+		int maxV = 0;
+		for(int x = Math.max(0, posX - 5); x < Math.min(mat.rows(), posX + 5); ++x) {
+			for(int y = Math.max(0, posY - 5); y < Math.min(mat.cols(), posY + 5); ++y) {
+				byte[] arr = new byte[mat.channels()];
+				mat.get(x, y ,arr);
+				maxV = Math.max(maxV, arr[0]);
+			}
+		}
+		
+		if(maxV < 120) {
+//			System.out.println(maxV);
+			Mat tt = mat.submat(Math.max(0, posX - 15), Math.min(mat.rows()- 1, posX + 15), Math.max(0, posY - 15), Math.min(mat.cols() - 1, posY + 15));
+//			HighGui.imshow("mat", tt);
+//			HighGui.waitKey();
+		}
+		
+		return maxV;
+	}
+	
+	public static int getGrayThres(Mat mat, Mat lines) {
+		int thres = 0;
+		
+		int[] grayCnt = new int[257];
+		for(int i = 0;i < lines.rows(); ++i) {
+			int[] arr = new int[4];
+			lines.get(i, 0, arr);
+			
+			int gray = 0;
+			gray = findDeepPixel(mat, arr[1], arr[0]);
+			++grayCnt[gray + 128];
+			gray = findDeepPixel(mat, arr[3], arr[2]);
+			++grayCnt[gray + 128];
+			gray = findDeepPixel(mat, (arr[1] + arr[3]) / 2, (arr[0] + arr[2]) / 2);
+			++grayCnt[gray + 128];
+		}
+		
+		for(int i = 255; i >= 0; --i) {
+			grayCnt[i] += grayCnt[i + 1];
+			if(grayCnt[i] > lines.rows() * 2.5) {
+				thres = i;
+				break;
+			}
+		}
+		
+		return thres - 128;
+	}
+	
+	public static double distance(int[] arr) {
+		double ans = Math.sqrt((arr[0] - arr[2]) * (arr[0] - arr[2]) 
+				+ (arr[1] - arr[3]) * (arr[1] - arr[3]));
+		return ans;
+	}
 
     public static void findContours(Mat srcImg, Mat mask,
                                     List<MatOfPoint> contours, Mat hierarchy) {
@@ -203,6 +283,7 @@ public class formsplit {
         h_minx = h_miny = Math.max(srcImg.rows(), srcImg.cols());
         Mat hlines = new Mat();
         Imgproc.HoughLinesP(horizontal, hlines, 1, 3.1415926/180, 10, 0, 50);
+        int threshold = getGrayThres(grayImg, hlines);
         for(int i = 0; i < hlines.rows(); ++i) {
             int[] arr = new int[4];
             hlines.get(i, 0, arr);
@@ -211,6 +292,13 @@ public class formsplit {
             h_maxx = Math.max(h_maxx, Math.max(arr[1], arr[3]));
             h_miny = Math.min(h_miny, Math.min(arr[0], arr[2]));
             h_maxy = Math.max(h_maxy, Math.max(arr[0], arr[2]));
+            
+			int headGray = findDeepPixel(grayImg, arr[1], arr[0]);
+			int midGray = findDeepPixel(grayImg, (arr[1] + arr[3])/2, (arr[0] + arr[2])/2);
+			int tailGray = findDeepPixel(grayImg, arr[3], arr[2]);
+			if(headGray < threshold || midGray < threshold || tailGray < threshold) {
+				continue;
+			}
 
             Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 6, Imgproc.LINE_AA);
         }
@@ -233,9 +321,18 @@ public class formsplit {
             int[] arr = new int[4];
             vlines.get(i, 0, arr);
 
+            if(Math.abs(arr[0] - arr[2]) > 3) continue;
+            
             if(!checkCross(arr, hlines))continue;
+            
+			int headGray = findDeepPixel(grayImg, arr[1], arr[0]);
+			int midGray = findDeepPixel(grayImg, (arr[1] + arr[3])/2, (arr[0] + arr[2])/2);
+			int tailGray = findDeepPixel(grayImg, arr[3], arr[2]);
+			if(headGray < threshold || midGray < threshold || tailGray < threshold) {
+				continue;
+			}
 
-            if(Math.abs(arr[1] - arr[3]) < 50) {
+            if(Math.abs(arr[1] - arr[3]) < 50 && distance(arr) > 11 && checkQualification(arr, hlines)) {
 
                 int lowline = 0;
                 if(arr[1] > arr[3]) {
@@ -338,12 +435,12 @@ public class formsplit {
     }
 
     public static void main(String[] args) throws IOException {
-    	File file = new File("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
+    	File file = new File("D:\\eclipse-workspace\\formsplit\\image\\bill.png");
     	BufferedImage img = ImageIO.read(file);
 
         List<RectangleArea> arr = doSplit(img);
 
-        Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\wx.png");
+        Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\bill.png");
         String resPath = "D:\\git_proj\\formsplit\\image\\result\\res";
         int cnt = 0;
 //		Imgproc.line(srcImg, new Point(0,0), new Point(100, 200), new Scalar(255,0,0), 12, Imgproc.LINE_AA);
