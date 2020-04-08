@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8">
+        <title>ocr</title>
+        <meta http-equiv="content-type" content="text/html" charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <meta http-equiv="pragma" content="no-cache"> 
+        <meta http-equiv="Cache-Control" content="no-cache, must-revalidate"> 
+        <meta http-equiv="expires" content="0">
+        <!-- <link type="text/css" rel="stylesheet" href="./css/style.css" /> -->
+        <!-- <script type="text/javascript" src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script> -->
+        <!-- <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/css/bootstrap.min.css"> -->
+        <!-- <script src='./js/http.js'></script> -->
+        <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+        <!-- <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script> -->
+        <!-- <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script> -->
+        <!-- <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script> -->
+</head>
+<body style="margin:0">
+    <!-- <input id='path' type='file'/> -->
+    <div id='imgdiv'></div>
+    <br/>
+    <div>
+        <label for="path">path:</label>
+        <input id='path' type="text" style='width:10%;display:inline;' placeholder="path" />
+        <button onclick='readImg()'>read</button>
+    </div>
+    <div style='display:inline'>
+        <label for="tagName">tag:</label>
+        <input id='tagName' type="text" style='width:10%;display:inline;' placeholder="tagName" /><br/>
+        <label for="position">Position:</label><br/><span id = "posX"></span>,<span id = "posY"></span><br/>
+        <button name='add' onclick="addToList()">add</button>
+    </div>
+    <div id='itemList'></div>
+    <button name='submit' onclick="submit()">submit</button>
+    <div id='result'></div>
+</body>
+</html>
+<script type="text/javascript">
+    var arrList = new Array();
+
+    function readImg() {
+        var path = document.getElementById('path').value;
+
+        var img = document.createElement("img");
+        img.src = path;
+        img.id = 'img';
+        document.getElementById('imgdiv').appendChild(img);
+
+        document.getElementById("img").addEventListener("dblclick", function (e) {
+            document.getElementById('posX').innerText = e.pageX;
+            document.getElementById('posY').innerText = e.pageY;
+        })
+    }
+
+    function addToList() {
+        var obj = new Object();
+
+        obj.tagName = document.getElementById('tagName').value;
+        obj.posX = document.getElementById('posX').innerText;
+        obj.posY = document.getElementById('posY').innerText;
+
+        var div = document.createElement("div");
+        div.innerText =  obj.tagName + " " + obj.posX + "," + obj.posY;
+
+        document.getElementById('itemList').appendChild(div);
+        arrList.push(obj);
+
+        
+    }
+
+    function submit() {
+        $.ajax({
+            method: "POST",
+            url: "http://127.0.0.1:8088/image",
+            data: {
+                arrPosition: arrList,
+            },
+            dataType: "json",
+            beforeSend: function(res){
+                // res.setRequestHeader("Authorization",Token);
+            },
+            success: function(res){
+                var div = document.createElement("div");
+                div.innerText =  res.result;
+
+                document.getElementById('result').appendChild(div);
+            },
+            error: function(res){
+                alert(res.responseJSON.message);
+            }
+        })
+    }
+</script>
