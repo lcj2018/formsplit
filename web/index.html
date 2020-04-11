@@ -18,12 +18,13 @@
         <!-- <script src="https://cdn.staticfile.org/vue-resource/1.5.1/vue-resource.min.js"></script> -->
 </head>
 <body style="margin:0">
-    <!-- <input id='path' type='file'/> -->
-    <div id='imgdiv'></div>
+    <!-- <div id='imgdiv'></div> -->
+    <img id='img' src=''/>
     <br/>
     <div>
-        <label for="path">path:</label>
-        <input id='path' type="text" style='width:10%;display:inline;' placeholder="path" />
+        <!-- <label for="path">path:</label> -->
+        <!-- <input id='path' type="text" style='width:10%;display:inline;' placeholder="path" /> -->
+        <input id='path' type='file'/>
         <button onclick='readImg()'>read</button>
     </div>
     <div style='display:inline'>
@@ -39,19 +40,53 @@
 </html>
 <script type="text/javascript">
     var arrList = new Array();
+    var base64img = '';
+    var blobImg = '';
+    var height = 0, width = 0, scale = 0;
 
-    function readImg() {
-        var path = document.getElementById('path').value;
+    var fileImg = document.querySelector('#path');
+    fileImg.onchange = function(event) {
 
-        var img = document.createElement("img");
-        img.src = path;
-        img.id = 'img';
-        document.getElementById('imgdiv').appendChild(img);
+        var file = event.currentTarget.files[0];
 
-        document.getElementById("img").addEventListener("dblclick", function (e) {
+        var base64FileReader = new FileReader();
+        base64FileReader.readAsDataURL(file);
+        base64FileReader.onload = function(e) {
+            base64img = e.target.result;
+            
+            var image = new Image();
+            image.src = e.target.result;
+            image.onload = function() {
+　　            height = this.height;
+                width = this.width;
+                scale = Math.trunc(Math.min(document.documentElement.clientHeight * 95 / height, 80));
+                var resWidth = width * scale / 100;
+                scale = Math.trunc(Math.min(resWidth * 100 / document.documentElement.clientWidth, 80));
+            };
+        }   
+
+        var blobFileReader = new FileReader();
+        blobFileReader.readAsBinaryString(file);
+        blobFileReader.onload = function(e) {
+            blobImg = e.target.result;
+        }
+    }
+
+    document.getElementById("img").addEventListener("dblclick", function (e) {
             document.getElementById('posX').innerText = e.pageX;
             document.getElementById('posY').innerText = e.pageY;
-        })
+    })
+
+    function readImg() {
+        // var path = document.getElementById('path').value;
+
+        // var img = document.createElement("img");
+        // img.src = base64img;
+        // img.id = 'img';
+        // document.getElementById('imgdiv').appendChild(img);
+
+        document.getElementById('img').setAttribute('src', base64img);
+        document.getElementById('img').setAttribute('style', 'width:' + scale + '%;');
     }
 
     function addToList() {
@@ -67,7 +102,9 @@
         document.getElementById('itemList').appendChild(div);
         arrList.push(obj);
 
-        
+        for(var i=0;i<arrList.length;++i) {
+            alert(arrList[i].tagName);
+        }
     }
 
     function submit() {
@@ -76,8 +113,8 @@
             url: "http://127.0.0.1:8088/image",
             data: {
                 arrPosition: arrList,
+                img: blobImg,
             },
-            dataType: "json",
             beforeSend: function(res){
                 // res.setRequestHeader("Authorization",Token);
             },
