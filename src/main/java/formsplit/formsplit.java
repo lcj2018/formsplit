@@ -200,11 +200,11 @@ public class formsplit {
 			}
 		}
 		
-//		if(maxV < 120) {
-////			System.out.println(maxV);
-//			Mat tt = mat.submat(Math.max(0, posX - 15), Math.min(mat.rows()- 1, posX + 15), Math.max(0, posY - 15), Math.min(mat.cols() - 1, posY + 15));
-////			HighGui.imshow("mat", tt);
-////			HighGui.waitKey();
+//		if(maxV < 113) {
+//			System.out.println(maxV);
+//			Mat tt = mat.submat(Math.max(0, posX - 5), Math.min(mat.rows()- 1, posX + 5), Math.max(0, posY - 5), Math.min(mat.cols() - 1, posY + 5));
+//			HighGui.imshow("mat", tt);
+//			HighGui.waitKey();
 //		}
 		
 		return maxV;
@@ -229,7 +229,7 @@ public class formsplit {
 		
 		for(int i = 255; i >= 0; --i) {
 			grayCnt[i] += grayCnt[i + 1];
-			if(grayCnt[i] > lines.rows() * 2.5) {
+			if(grayCnt[i] > lines.rows() * 2.4) {
 				thres = i;
 				break;
 			}
@@ -275,6 +275,7 @@ public class formsplit {
         Imgproc.dilate(horizontal, horizontal, horizontalStruct);
 
         int h_minx, h_maxx, h_miny, h_maxy;
+//        int orih_minx, orih_maxx, orih_miny, orih_maxy;
         h_maxx = h_maxy = 0;
         h_minx = h_miny = Math.max(srcImg.rows(), srcImg.cols());
         Mat hlines = new Mat();
@@ -292,12 +293,14 @@ public class formsplit {
 			int headGray = findDeepPixel(grayImg, arr[1], arr[0]);
 			int midGray = findDeepPixel(grayImg, (arr[1] + arr[3])/2, (arr[0] + arr[2])/2);
 			int tailGray = findDeepPixel(grayImg, arr[3], arr[2]);
-			if(headGray < threshold || midGray < threshold || tailGray < threshold) {
+			if(headGray < threshold - 20 || midGray < threshold - 20 || tailGray < threshold - 20) {
 				continue;
 			}
 
-            Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 6, Imgproc.LINE_AA);
+            Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 3, Imgproc.LINE_AA);
         }
+        
+//        orih_minx = h_minx;orih_maxx = h_maxx;orih_miny = h_miny;orih_maxy = h_maxy;
 
         int vScale = 63;
         int verticalSize = horizontal.cols() / vScale;
@@ -308,6 +311,7 @@ public class formsplit {
         Imgproc.dilate(vertical, vertical, verticalStruct);
 
         int v_minx, v_maxx, v_miny, v_maxy;
+//        int oriv_minx, oriv_maxx, oriv_miny, oriv_maxy;
         v_maxx = v_maxy = 0;
         v_minx = v_miny = Math.max(srcImg.cols(), srcImg.cols());
         Mat vlines = new Mat();
@@ -324,7 +328,7 @@ public class formsplit {
 			int headGray = findDeepPixel(grayImg, arr[1], arr[0]);
 			int midGray = findDeepPixel(grayImg, (arr[1] + arr[3])/2, (arr[0] + arr[2])/2);
 			int tailGray = findDeepPixel(grayImg, arr[3], arr[2]);
-			if(headGray < threshold || midGray < threshold || tailGray < threshold) {
+			if(headGray < threshold - 20 || midGray < threshold - 20 || tailGray < threshold - 20) {
 				continue;
 			}
 
@@ -334,15 +338,15 @@ public class formsplit {
                 if(arr[1] > arr[3]) {
                     lowline = GetLowLine(arr[1], arr[0], hlines);
                     if(lowline < 10000000)
-                        Imgproc.line(mask, new Point(arr[0], lowline), new Point(arr[2], arr[3]), new Scalar(255), 6, Imgproc.LINE_AA);
+                        Imgproc.line(mask, new Point(arr[0], lowline), new Point(arr[2], arr[3]), new Scalar(255), 3, Imgproc.LINE_AA);
                 } else {
                     lowline = GetLowLine(arr[3], arr[2], hlines);
                     if(lowline < 10000000)
-                        Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], lowline), new Scalar(255), 6, Imgproc.LINE_AA);
+                        Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], lowline), new Scalar(255), 3, Imgproc.LINE_AA);
                 }
-
+//                Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 3, Imgproc.LINE_AA);
             } else {
-                Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 6, Imgproc.LINE_AA);
+                Imgproc.line(mask, new Point(arr[0], arr[1]), new Point(arr[2], arr[3]), new Scalar(255), 3, Imgproc.LINE_AA);
             }
 
             v_minx = Math.min(v_minx, Math.min(arr[1], arr[3]));
@@ -350,6 +354,8 @@ public class formsplit {
             v_miny = Math.min(v_miny, Math.min(arr[0], arr[2]));
             v_maxy = Math.max(v_maxy, Math.max(arr[0], arr[2]));
         }
+        
+//        oriv_minx = v_minx;oriv_maxx=v_maxx;oriv_miny = v_miny; oriv_maxy = v_maxy;
         
         int range = 6;
         for(int i = 0; i < hlines.rows(); ++i) {
@@ -388,10 +394,10 @@ public class formsplit {
 //        	}
         }
 
-        Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_maxy, v_minx), new Scalar(255), 10, Imgproc.LINE_AA);
-        Imgproc.line(mask, new Point(h_miny, v_maxx), new Point(h_maxy, v_maxx), new Scalar(255), 10, Imgproc.LINE_AA);
-        Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_miny, v_maxx), new Scalar(255), 10, Imgproc.LINE_AA);
-        Imgproc.line(mask, new Point(h_maxy, v_minx), new Point(h_maxy, v_maxx), new Scalar(255), 10, Imgproc.LINE_AA);
+        Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_maxy, v_minx), new Scalar(255), 3, Imgproc.LINE_AA);
+        Imgproc.line(mask, new Point(h_miny, v_maxx), new Point(h_maxy, v_maxx), new Scalar(255), 3, Imgproc.LINE_AA);
+        Imgproc.line(mask, new Point(h_miny, v_minx), new Point(h_miny, v_maxx), new Scalar(255), 3, Imgproc.LINE_AA);
+        Imgproc.line(mask, new Point(h_maxy, v_minx), new Point(h_maxy, v_maxx), new Scalar(255), 3, Imgproc.LINE_AA);
 
 //        Imgcodecs.imwrite("D:\\git_proj\\formsplit\\image\\mask.png", mask);
 
@@ -478,15 +484,15 @@ public class formsplit {
     }
 
     public static void main(String[] args) throws IOException {
-    	File file = new File("D:\\eclipse-workspace\\formsplit\\image\\bill.png");
+    	File file = new File("D:\\git_proj\\formsplit\\image\\bill.png");
     	BufferedImage img = ImageIO.read(file);
 
         List<RectangleArea> arr = doSplit(img);
 
-        File grayFile = new File("D:\\git_proj\\formsplit\\image\\9529.png");
-        ImageIO.write(BGR2Gray(img), "png", grayFile);
+        File grayFile = new File("D:\\git_proj\\formsplit\\image\\9530.png");
+        ImageIO.write(toGray(img), "png", grayFile);
         
-        Mat srcImg = Imgcodecs.imread("D:\\eclipse-workspace\\formsplit\\image\\bill.png");
+        Mat srcImg = Imgcodecs.imread("D:\\git_proj\\formsplit\\image\\bill.png");
         String resPath = "D:\\git_proj\\formsplit\\image\\result\\res";
         int cnt = 0;
 //		Imgproc.line(srcImg, new Point(0,0), new Point(100, 200), new Scalar(255,0,0), 12, Imgproc.LINE_AA);
