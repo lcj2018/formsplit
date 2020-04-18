@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>OCR-web</title>
+    <meta http-equiv="content-type" content="text/html" charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <link type="text/css" href="css/jquery.fullPage.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="css/hci.css" />
+    <link type="text/css" rel="stylesheet" href="css/style.css" />
+    <link type="text/css" rel="stylesheet" href="css/animate.css" />
+    <script type="text/javascript" src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.fullPage.min.js"></script>
+    <script type="text/javascript" src="js/jquery.windstagball.js"></script>
+</head>
+
+<body style="overflow: hidden; height: 100%; font-size: 82.79%;">
+    <div id="fullpage" class="fullpage-wrapper" style="height: 100%; position: relative; transform: translate3d(0px, 0px, 0px);">
+        <div class="section fp-section active" data-anchor="page1" style="background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);height: 683px;">
+            <div class="content-1">
+                <div class="title hinge">
+                    <span>Welcome</span><br/>
+                </div>
+                <div class="baseBlock" style="display:block;">
+                    <div class="row">
+                        <div class="col">
+                            <section style="color: white;font-size: 1.5rem;display: flex;align-items: center;justify-content: center;">
+                                <p>Hint:&nbsp;&nbsp;请选择待输入的图片。</p>
+                            </section>
+                        </div>
+                    </div>
+                    <div class='row'>
+                        <div class='col'>
+                            <input class="blockItem" id='imgpath' type='file'/>
+                        </div>
+                    </div>
+                    <br/>
+                </div>
+                <br/><br/>
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-4'></div>
+                    <div class='col-xs-12 col-sm-4'></div>
+                    <div class='col-xs-12 col-sm-4 '>
+                        <a href='#page2'><button>下一步</button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section fp-section" data-anchor="page2" style="background: linear-gradient(to bottom left, #53e3a6 0%,  #50a3a2 100%);height: 683px;text-align: center;">
+            <div class="content-1">
+                <div class="title hinge">
+                    <!-- <span>Welcome</span> -->
+                </div>
+                <div class="baseBlock" style="display:block;width: 80%;">
+                    <div class="row">
+                        <div class="col">
+                            <section style="color: white;font-size: 1.5rem;display: flex;align-items: center;justify-content: center;">
+                                <p>Hint:&nbsp;&nbsp;从先前保存的模版文件载入，或手动修改，以提供图片区域tag及其坐标信息，或者直接单击"提交"。</p>
+                            </section>
+                        </div>
+                    </div>
+                    <br/><br/>
+                    <p style="color: white;font-size: 2rem;display: flex;">
+                        模版文件(非必选项)：
+                    </p>
+                    <div class='row'>
+                        <div class='col'>
+                            <input class="blockItem" style='margin-top: 0;margin-bottom: 0;' id='templatePath' type='file' accept='*.json'/>
+                        </div>
+                    </div>
+                    <br/><hr/><br/> 
+                    <button id="addTag">添加Tag</button><br/><br/>
+                    <table id='posList' border='1' width='80%' style='color: white;font-size: 2rem;margin-left: 10%; margin-right: 10%;border: 2px solid white;'>
+                        <tr style='border: 2px solid white;'>
+                            <th>Tag名</th>
+                            <th>坐标</th>
+                            <th>操作</th>
+                        </tr>
+                    </table>
+                    <br/>
+                    <button id="exportTemplate" onclick="exportTemplate()">导出模版</button><br/><br/>
+                </div>
+                <br/><br/>
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-4'></div>
+                    <div class='col-xs-12 col-sm-4'>
+                        <a href='#page1'><button>上一步</button></a>
+                    </div>
+                    <div class='col-xs-12 col-sm-4'>
+                        <a href='#page3'><button onclick='submitForm()'>提交</button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section fp-section" data-anchor="page3" style="background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);height: 683px;text-align: center;">
+            <div class="content-1">
+                <div class="title">
+                    <span>Result</span><br/>
+                </div>
+                <div class="baseBlock" style="display:block;">
+                    <br/><br/>
+                    <div class='row'>
+                        <div class='col'>
+                            <table id='resTableList' border='1' width='80%' style='color: white;font-size: 2rem;margin-left: 10%; margin-right: 10%;border: 2px solid white;'>
+                                <tr style='border: 2px solid white;'>
+                                    <th>Tag名</th>
+                                    <th>内容</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <br/>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<div class="modal fade" id="myModal" tabindex="-1">
+    <div class="modal-dialog" style="z-index: 5;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> -->
+                <h4 class="modal-title" id="myModalLabel">添加Tag</h4>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.2rem;">Hint:填写Tag后，双击图片获取坐标，单击“确定”提交。</p>
+                <hr/>
+                <div style="overflow: hidden;">
+                    <img id='img' src='' style="width: 60%;position: relative;"/>
+                </div>
+                <hr/>
+                <div style='display:inline;font-size: 1.5rem;'>
+                    <label for="tagName">tag名:</label>
+                    <input id='tagName' type="text" style='border: 1px solid black;width:200px;display:inline;border-radius: 3px;' placeholder="tagName" /><br/>
+                    <label for="position">坐标:</label><br/>(<span id = "posX">Unknown</span>&Tab;,&Tab;<span id = "posY">Unknown</span>)<br/>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex;">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary" data-dismiss="modal" onclick="addTag()">提交</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<script>
+    var arrList = new Array();
+    var base64img = '';
+    var blobImg = '';
+    var height = 0, width = 0, scale = 0;
+
+    var fileImg = document.querySelector('#imgpath');
+    fileImg.onchange = function(event) {
+
+        var file = event.currentTarget.files[0];
+
+        var base64FileReader = new FileReader();
+        base64FileReader.readAsDataURL(file);
+        base64FileReader.onload = function(e) {
+            base64img = e.target.result;
+            
+            var image = new Image();
+            image.src = e.target.result;
+            image.onload = function() {
+　　            height = this.height;
+                width = this.width;
+                // scale = Math.trunc(Math.min(document.documentElement.clientHeight * 95 / height, 80));
+                // var resWidth = width * scale / 100;
+                // scale = Math.trunc(Math.min(resWidth * 100 / document.documentElement.clientWidth, 80));
+
+                document.getElementById('img').setAttribute('src', base64img);
+                // document.getElementById('img').setAttribute('style', 'width:' + scale + '%;');
+            };
+        }   
+
+        var blobFileReader = new FileReader();
+        blobFileReader.readAsBinaryString(file);
+        blobFileReader.onload = function(e) {
+            blobImg = e.target.result;
+        }
+    }
+
+    function removeItems() {
+        var i = -1, j = 0;
+        for(;j < arrList.length; ++j) {
+            if(arrList[j].posX >=0 && arrList[j].posY >= 0) {
+                ++i;
+                arrList[i] = arrList[j];
+            }
+        }
+
+        for(++i; i < arrList.length; ++i) {
+            arrList.pop();
+        }
+    }
+
+    var fileTemplate = document.querySelector('#templatePath');
+    fileTemplate.onchange = function(event) {
+
+        var file = event.currentTarget.files[0];
+
+        var jsonReader = new FileReader();
+        jsonReader.readAsText(file);
+        jsonReader.onload = function(e) {
+            var json = e.target.result;
+
+            var arrPos = eval('(' + json + ')');
+
+            for(var i=0;i<arrPos.length;++i) {
+                var obj = new Object();
+
+                obj.tagName = arrPos[i].tagName;
+                obj.posX = arrPos[i].posX;
+                obj.posY = arrPos[i].posY;
+
+                // var div = document.createElement("div");
+                // div.innerText =  obj.tagName + " " + obj.posX + "," + obj.posY;
+
+                // document.getElementById('itemList').appendChild(div);
+                if(obj.posX < 0 && obj.posY < 0) continue;
+
+                arrList.push(obj);
+
+                var tr = document.createElement("tr");
+                tr.id = 'tr' + (arrList.length - 1);
+
+                var tdTag = document.createElement("td");
+                tdTag.innerText = obj.tagName;
+                tr.appendChild(tdTag);
+
+                var tdPos = document.createElement("td");
+                tdPos.innerText = "( " + obj.posX + ", " + obj.posY + ")";
+                tr.appendChild(tdPos);
+
+                var tdOp = document.createElement("td");
+                var button = document.createElement("button");
+                button.id = "button" + (arrList.length - 1);
+                button.style = 'width:100%;';
+                button.innerText = "删除";
+
+                tdOp.appendChild(button);
+                tr.appendChild(tdOp);
+
+                document.getElementById('posList').appendChild(tr);
+
+                document.getElementById("button" + (arrList.length - 1)).addEventListener("click", function(e) {
+                    var index = e.target.id.substring(6);
+                    document.getElementById('tr' + index).remove();
+                    arrList[index].posX = -250;
+                    arrList[index].posY = -250;
+                })
+            }            
+        }
+    }
+
+    document.getElementById("img").addEventListener("dblclick", function (e) {
+        var img = document.getElementById('img').getBoundingClientRect();
+        var currWidth = document.getElementById("img").width;
+        var scale = width / currWidth;
+        document.getElementById('posX').innerText = (e.pageX - img.x) * scale;
+        document.getElementById('posY').innerText = (e.pageY - img.y) * scale;
+    })
+
+    function exportTemplate() {
+        var aTag = document.createElement('a');
+        var blob = new Blob([JSON.stringify(arrList)]);
+        aTag.download = "template.json";
+        aTag.href = URL.createObjectURL(blob);
+        aTag.click();
+        URL.revokeObjectURL(blob);
+    }
+
+    function addTag() {
+        var obj = new Object();
+
+        obj.tagName = document.getElementById('tagName').value;
+        obj.posX = document.getElementById('posX').innerText;
+        obj.posY = document.getElementById('posY').innerText;
+
+        // var div = document.createElement("div");
+        // div.innerText =  obj.tagName + " " + obj.posX + "," + obj.posY;
+
+        // document.getElementById('itemList').appendChild(div);
+        arrList.push(obj);
+
+        var tr = document.createElement("tr");
+        tr.id = 'tr' + (arrList.length - 1);
+
+        var tdTag = document.createElement("td");
+        tdTag.innerText = obj.tagName;
+        tr.appendChild(tdTag);
+
+        var tdPos = document.createElement("td");
+        tdPos.innerText = "( " + obj.posX + ", " + obj.posY + ")";
+        tr.appendChild(tdPos);
+        
+        var tdOp = document.createElement("td");
+        var button = document.createElement("button");
+        button.id = "button" + (arrList.length - 1);
+        button.style = 'width:100%;';
+        button.innerText = "删除";
+    
+        tdOp.appendChild(button);
+        tr.appendChild(tdOp);
+
+        document.getElementById('posList').appendChild(tr);
+
+        document.getElementById("button" + (arrList.length - 1)).addEventListener("click", function(e) {
+            var index = e.target.id.substring(6);
+            document.getElementById('tr' + index).remove();
+            arrList[index].posX = -250;
+            arrList[index].posY = -250;
+        })
+    }
+
+    $(function() {
+        $("#addTag").click(function() {
+            $('#myModal').modal('show');
+        })
+        $('#fullpage').fullpage({
+            'verticalCentered': false,
+            'css3': true,
+            'sectionsColor': ['#FFFFFF', '#FFFFFF', '#aab9c9'],
+            anchors: ['page1', 'page2', 'page3'],
+            'navigation': true,
+            'navigationPosition': 'right',
+            'navigationTooltips': ['第一步', '第二步', '结果'],
+        });
+        $("[data-toggle='popover']").popover();
+    })
+
+    function submitForm() {
+        removeItems();
+
+        $.ajax({
+            method: "POST",
+            url: "http://localhost/ocr",
+            data: {
+                arrPosition: arrList,
+                img: blobImg,
+            },
+            beforeSend: function(res){
+                // res.setRequestHeader("Authorization",Token);
+            },
+            success: function(result){
+		        res = eval('(' + result + ')');
+
+                for(var i=0;i<res.content.length;++i) {
+
+                    var tr = document.createElement("tr");
+                    // tr.id = 'tr' + (arrList.length - 1);
+
+                    var tdTag = document.createElement("td");
+                    tdTag.innerText = res.content[i].tagName;
+                    tr.appendChild(tdTag);
+
+                    var tdTxt = document.createElement("td");
+                    tdTxt.innerText = res.content[i].txt;            
+                    tr.appendChild(tdTxt);
+
+                    document.getElementById('resTableList').appendChild(tr);
+                }
+
+            },
+            error: function(res){
+                alert(res.responseJSON.message);
+            }
+        })
+    }
+</script>
+</html>

@@ -1,0 +1,48 @@
+.baseBlock {
+    word-wrap: break-word;
+    position: relative;
+    /* top: 20%; */
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5%;
+    width: 70%;
+    margin: auto;
+    display: flex;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 12%;
+    margin-top: 1%;
+    font-family: "Arial", "Microsoft YaHei", "黑体", "宋体", sans-serif;
+}
+
+.blockItem {
+    position: relative;
+    /* margin: 10%; */
+    /* top: 10%; */
+    /* left: 20%; */
+    color: white;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navigation {
+    position: fixed;
+    right: 5%;
+    translate: (-50%, 50%);
+}
+
+@media (min-width:600px) {
+    .blockItem {
+        margin: 15%;
+    }
+}
+
+@media (max-width:576px) {
+    .blockItem {
+        font-size: 1.5rem;
+    }
+}

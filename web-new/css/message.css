@@ -1,0 +1,33 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300);  
+body {  
+    font-family: 'Source Sans Pro', sans-serif;  
+    color: white;   
+  }  
+  
+.box {
+    background: white;
+    border-radius: 10px;
+}
+
+.page-title {
+    background: #5E5E5E;
+    color: white;
+}
+
+.pt-left {
+    float: left;
+    display: flex;
+    position: relative;
+    font-size: 3rem;
+}
+
+.pt-right {
+    float: right;
+    display: flex;
+    position: relative;
+    font-size: 1.5rem;
+}
+
+.pt-right a {
+    color: white;
+}
