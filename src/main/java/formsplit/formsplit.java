@@ -128,7 +128,7 @@ public class formsplit {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
-    public static boolean checkCross(int arr[], Mat lines) {
+    public static boolean checkCross(int arr[], Mat lines) {	//check a vertical line and horizontal lines
         int x1, y1, x2, y2;
         x1 = arr[1]; x2 = arr[3];
         int maxx = Math.max(x1, x2);
@@ -140,8 +140,28 @@ public class formsplit {
             int[] pos = new int[4];
             lines.get(i, 0, pos);
 
-            if((pos[1] >= minx && pos[1] <= maxx || pos[3] >= minx && pos[1] <= maxx) &&
-                    (y1 >= pos[0] && y1 <= pos[2] || y2 >= pos[0] && y2 <= pos[2])) {
+            if((pos[1] >= minx && pos[1] <= maxx || pos[3] >= minx && pos[3] <= maxx) &&
+                    (y1 >= Math.min(pos[0], pos[2]) && y1 <= Math.max(pos[0], pos[2]) || y2 >= Math.min(pos[0], pos[2]) && y2 <= Math.max(pos[0], pos[2]))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean checkCross2(int arr[], Mat lines) {	//check vertical lines and a horizontal line
+        int x1, y1, x2, y2;
+        y1 = arr[0]; y2 = arr[2];
+        int maxy = Math.max(y1, y2);
+        int miny = Math.min(y1, y2);
+
+        x1 = arr[1]; x2 = arr[3];
+
+        for(int i = 0; i < lines.rows(); ++i) {
+            int[] pos = new int[4];
+            lines.get(i, 0, pos);
+
+            if((pos[0] >= miny - 10 && pos[0] <= maxy + 10 || pos[2] >= miny - 10 && pos[2] <= maxy + 10) &&
+                    (x1 >= Math.min(pos[1], pos[3]) && x1 <= Math.max(pos[1], pos[3]) || x2 >= Math.min(pos[1], pos[3]) && x2 <= Math.max(pos[1], pos[3]))) {
                 return true;
             }
         }
@@ -243,6 +263,54 @@ public class formsplit {
 				+ (arr[1] - arr[3]) * (arr[1] - arr[3]));
 		return ans;
 	}
+	
+	public static void horizontalLineMerge(Mat lines) {
+		boolean flag;
+		int tmp = 0;
+		do
+		{
+			flag = false;
+			
+			for(int i=0;i<lines.rows();++i) {
+				int[] ipos = new int[4];
+				lines.get(i, 0, ipos);
+				if(ipos[0]>ipos[2]) {
+					tmp = ipos[0];
+					ipos[2] = ipos[0];
+					ipos[0] = tmp;
+					
+					tmp = ipos[1];
+					ipos[1] = ipos[3];
+					ipos[3] = tmp;
+				}
+				for(int j=0;j<lines.rows();++j) {
+					int[] jpos = new int[4];
+					lines.get(j, 0, jpos);
+					if(jpos[0]>jpos[2]) {
+						tmp = jpos[0];
+						jpos[2] = jpos[0];
+						jpos[0] = tmp;
+						
+						tmp = jpos[1];
+						jpos[1] = jpos[3];
+						jpos[3] = tmp;
+					}
+					
+					if(!(Math.min(jpos[1], jpos[3])-Math.max(ipos[1], ipos[3]) < 5 &&
+							Math.min(jpos[1], jpos[3])-Math.max(ipos[1], ipos[3]) > 0)) continue;
+					
+					if(jpos[0] < ipos[2] && ipos[2] < jpos[2]) {
+						ipos[2] = jpos[2];
+						jpos[0] = jpos[1] = jpos[2] = jpos[3] = 0;
+						flag = true;
+					}
+				}
+				
+				lines.put(i, 0, ipos);
+			}
+			
+		}while(flag);
+	}
 
     public static void findContours(Mat srcImg, Mat mask,
                                     List<MatOfPoint> contours, Mat hierarchy) {
@@ -281,9 +349,29 @@ public class formsplit {
         Mat hlines = new Mat();
         Imgproc.HoughLinesP(horizontal, hlines, 1, 3.1415926/180, 10, 0, 50);
         int threshold = getGrayThres(grayImg, hlines);
+        
+        horizontalLineMerge(hlines);
+        
+        int vScale = 63;
+        int verticalSize = horizontal.cols() / vScale;
+        Mat verticalStruct = Imgproc.getStructuringElement(
+                Imgproc.MORPH_RECT, new Size(1, verticalSize));
+
+        Imgproc.erode(vertical, vertical, verticalStruct);
+        Imgproc.dilate(vertical, vertical, verticalStruct);
+
+        int v_minx, v_maxx, v_miny, v_maxy;
+//        int oriv_minx, oriv_maxx, oriv_miny, oriv_maxy;
+        v_maxx = v_maxy = 0;
+        v_minx = v_miny = Math.max(srcImg.cols(), srcImg.cols());
+        Mat vlines = new Mat();
+        Imgproc.HoughLinesP(vertical, vlines, 1, 3.1415926/180, 10, 0, 50);
+        
         for(int i = 0; i < hlines.rows(); ++i) {
             int[] arr = new int[4];
             hlines.get(i, 0, arr);
+            
+            if(!checkCross2(arr, vlines))continue;
 
             h_minx = Math.min(h_minx, Math.min(arr[1], arr[3]));
             h_maxx = Math.max(h_maxx, Math.max(arr[1], arr[3]));
@@ -301,21 +389,6 @@ public class formsplit {
         }
         
 //        orih_minx = h_minx;orih_maxx = h_maxx;orih_miny = h_miny;orih_maxy = h_maxy;
-
-        int vScale = 63;
-        int verticalSize = horizontal.cols() / vScale;
-        Mat verticalStruct = Imgproc.getStructuringElement(
-                Imgproc.MORPH_RECT, new Size(1, verticalSize));
-
-        Imgproc.erode(vertical, vertical, verticalStruct);
-        Imgproc.dilate(vertical, vertical, verticalStruct);
-
-        int v_minx, v_maxx, v_miny, v_maxy;
-//        int oriv_minx, oriv_maxx, oriv_miny, oriv_maxy;
-        v_maxx = v_maxy = 0;
-        v_minx = v_miny = Math.max(srcImg.cols(), srcImg.cols());
-        Mat vlines = new Mat();
-        Imgproc.HoughLinesP(vertical, vlines, 1, 3.1415926/180, 10, 0, 50);
 
         for(int i = 0; i < vlines.rows(); ++i) {
             int[] arr = new int[4];
