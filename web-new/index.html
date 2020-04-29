@@ -20,7 +20,7 @@
     <div id="fullpage" class="fullpage-wrapper" style="height: 100%; position: relative; transform: translate3d(0px, 0px, 0px);">
         <div class="section fp-section active" data-anchor="page1" style="background: linear-gradient(to bottom right, #50a3a2 0%, #53e3a6 100%);height: 683px;">
             <div class="content-1">
-                <div class="title hinge">
+                <div class="title bounceIn">
                     <span>Welcome</span><br/>
                 </div>
                 <div class="baseBlock" style="display:block;">
@@ -113,6 +113,41 @@
                     </div>
                     <br/>
                 </div>
+                <br/><br/>
+                <div class='row'>
+                    <div class='col-xs-12 col-sm-4'></div>
+                    <div class='col-xs-12 col-sm-4'>
+                    </div>
+                    <div class='col-xs-12 col-sm-4'>
+                        <a href='#page4'><button>过程图片</button></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section fp-section" data-anchor="page4" style="background: linear-gradient(to bottom left, #53e3a6 0%, #50a3a2  100%);height: 683px;text-align: center;">
+            <div class="content-1">
+                <div class="title">
+                    <span>Result</span><br/>
+                </div>
+                <div class="baseBlock" style="display:block;">
+                    <div class="row">
+                        <div class="col">
+                            <section style="color: white;font-size: 1.5rem;display: flex;align-items: center;justify-content: center;">
+                                <p>Hint:&nbsp;&nbsp;点击查看对应过程图片</p>
+                            </section>
+                        </div>
+                    </div>
+                    <br/><br/>
+                    <div class='row' style="color: white;font-size: 2rem;display: flex;">
+                        <div class='col-xs-12 col-sm-12'>
+                            <a href='#' onclick='setProImg("formSplit");'>表格提取</a>
+                        </div>
+                        <!-- <div class='col-xs-12 col-sm-6'>
+                            <a href='#'>???</a>
+                        </div> -->
+                    </div>
+                    <br/>
+                </div>
             </div>
         </div>
     </div>
@@ -125,7 +160,7 @@
                 <h4 class="modal-title" id="myModalLabel">添加Tag</h4>
             </div>
             <div class="modal-body">
-                <p style="font-size: 1.2rem;">Hint:填写Tag后，双击图片获取坐标，单击“确定”提交。</p>
+                <p style="font-size: 1.2rem;">Hint:填写或从下拉菜单中选择Tag后，双击图片获取坐标，单击“确定”提交。</p>
                 <hr/>
                 <div style="overflow: hidden;">
                     <img id='img' src='' style="width: 60%;position: relative;"/>
@@ -133,7 +168,23 @@
                 <hr/>
                 <div style='display:inline;font-size: 1.5rem;'>
                     <label for="tagName">tag名:</label>
-                    <input id='tagName' type="text" style='border: 1px solid black;width:200px;display:inline;border-radius: 3px;' placeholder="tagName" /><br/>
+                    <!-- <input id='tagName' type="text" style='border: 1px solid black;width:200px;display:inline;border-radius: 3px;' placeholder="tagName" /><br/> -->
+                    <div style="padding: 0px 5rem 0px;">
+                        <div class="row">
+                            <div class="col-sm-12 col-xs-12">
+                                <div class="input-group">
+                                    <input id='tagName' type="text" class="form-control">
+                                    <div class="input-group-btn">
+                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                            <span class="caret"></span>
+                                        </button>
+                                        <ul id='tagList' class="dropdown-menu pull-right">     
+                                        </ul>
+                                    </div><!-- /btn-group -->
+                                </div><!-- /input-group -->
+                            </div><!-- /.col-lg-6 -->
+                        </div><!-- /.row -->
+                    </div>
                     <label for="position">坐标:</label><br/>(<span id = "posX">Unknown</span>&Tab;,&Tab;<span id = "posY">Unknown</span>)<br/>
                 </div>
             </div>
@@ -144,11 +195,40 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
+<div class="modal fade" id="imgModal" tabindex="-1">
+    <div class="modal-dialog" style="z-index: 5;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> -->
+                <h4 class="modal-title" id="myModalLabel">查看图片</h4>
+            </div>
+            <div class="modal-body">
+                <hr/>
+                <div style="overflow: hidden;">
+                    <img id='proImg' src='' style="width: 60%;position: relative;"/>
+                </div>
+                <hr/>
+            </div>
+            <div class="modal-footer" style="display: flex;">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 <script>
+    var arrTag = ['Consignee', 'PORT OF DISCHARGE', 'Shipper,OCEAN VESSEL', 'Document No Bill of Lading No(Number)',
+        'PORT OF LOADING', 'PORT OF TRANSHIP', 'Port of Discharge', 'Container No and Seal No Marks & Nos',
+        'TOTAL NUMBER OF CONTAINERS OR PACKAGES(IN WORDS)', 'G.W.,FREIGHT & CHARGES,DESCRIPTION OF GOODS',
+        'DESCRIPTION OF GOODS', 'Quantilty And Kind of Packages', 'PLACE OF DELIVERY'];
     var arrList = new Array();
     var base64img = '';
     var blobImg = '';
     var height = 0, width = 0, scale = 0;
+    var formSplitImg = '';
+
+    for(var i = 0;i < arrTag.length; ++i) {
+        $('#tagList').append("<li onclick=\"setTag('"+arrTag[i]+"')\">"+arrTag[i]+'</li>');
+    }
 
     var fileImg = document.querySelector('#imgpath');
     fileImg.onchange = function(event) {
@@ -254,6 +334,15 @@
         }
     }
 
+    function dataURLtoBlob(dataurl) {
+        var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    }
+
     document.getElementById("img").addEventListener("dblclick", function (e) {
         var img = document.getElementById('img').getBoundingClientRect();
         var currWidth = document.getElementById("img").width;
@@ -322,10 +411,10 @@
             'verticalCentered': false,
             'css3': true,
             'sectionsColor': ['#FFFFFF', '#FFFFFF', '#aab9c9'],
-            anchors: ['page1', 'page2', 'page3'],
+            anchors: ['page1', 'page2', 'page3', 'page4'],
             'navigation': true,
             'navigationPosition': 'right',
-            'navigationTooltips': ['第一步', '第二步', '结果'],
+            'navigationTooltips': ['第一步', '第二步', '结果', '中间图像'],
         });
         $("[data-toggle='popover']").popover();
     })
@@ -362,11 +451,26 @@
                     document.getElementById('resTableList').appendChild(tr);
                 }
 
+                formSplitImg = res.formSplitImg;
             },
             error: function(res){
                 alert(res.responseJSON.message);
             }
         })
+    }
+
+    function setProImg(op) {
+        switch(op) {
+            case "formSplit":
+                document.getElementById('proImg').setAttribute('src', formSplitImg);
+                break;
+        }
+
+        $("#imgModal").modal('show');
+    }
+
+    function setTag(strTag) {
+        document.getElementById("tagName").value = strTag;
     }
 </script>
 </html>
