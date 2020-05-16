@@ -353,6 +353,7 @@ public class formsplit {
         horizontalLineMerge(hlines);
         
         int vScale = 63;
+//        int vScale = 10;
         int verticalSize = horizontal.cols() / vScale;
         Mat verticalStruct = Imgproc.getStructuringElement(
                 Imgproc.MORPH_RECT, new Size(1, verticalSize));
@@ -507,7 +508,7 @@ public class formsplit {
             Integer midY = rec.y + bound + rec.height / 2;
             String text = midX.toString() + ',' + midY.toString();
             Point point = new Point(rec.x + rec.width/2 - 55, rec.y + bound + rec.height/2 - 15);
-            Imgproc.putText(mask, text, point, Imgproc.FONT_HERSHEY_SIMPLEX, 0.8, new Scalar(255), 2);
+//            Imgproc.putText(mask, text, point, Imgproc.FONT_HERSHEY_SIMPLEX, 0.8, new Scalar(255), 2);
 
             ans.add(recItem);
 
@@ -558,6 +559,7 @@ public class formsplit {
 
     public static void main(String[] args) throws IOException {
     	File file = new File("D:\\git_proj\\formsplit\\image\\bill.png");
+//    	File file = new File("D:\\git_proj\\formsplit\\image\\p1.jpg");
     	BufferedImage img = ImageIO.read(file);
 
         List<RectangleArea> arr = doSplit(img);
@@ -566,6 +568,7 @@ public class formsplit {
         ImageIO.write(toGray(img), "png", grayFile);
         
         Mat srcImg = Imgcodecs.imread("D:\\git_proj\\formsplit\\image\\bill.png");
+//        Mat srcImg = Imgcodecs.imread("D:\\git_proj\\formsplit\\image\\p1.jpg");
         String resPath = "D:\\git_proj\\formsplit\\image\\result\\res";
         int cnt = 0;
 //		Imgproc.line(srcImg, new Point(0,0), new Point(100, 200), new Scalar(255,0,0), 12, Imgproc.LINE_AA);
